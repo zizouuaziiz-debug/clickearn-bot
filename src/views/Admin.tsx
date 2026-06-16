@@ -155,17 +155,17 @@ export default function Admin() {
 
   function renderRows(rows: any[], columns: Array<{ key: string; label: string; render?: (row: any) => any }>) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-auto">
-        <table className="w-full text-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-x-auto">
+        <table className="min-w-[640px] w-full text-sm">
           <thead>
             <tr className="text-left text-gray-500 border-b border-gray-100 dark:border-gray-700">
-              {columns.map((column) => <th key={column.key} className="px-4 py-3">{column.label}</th>)}
+              {columns.map((column) => <th key={column.key} className="px-3 py-3 sm:px-4">{column.label}</th>)}
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => (
               <tr key={row.id ?? `${index}-${row.transactionId ?? row.title ?? "row"}`} className="border-b border-gray-50 dark:border-gray-700 align-top">
-                {columns.map((column) => <td key={column.key} className="px-4 py-3 text-gray-700 dark:text-gray-200">{column.render ? column.render(row) : row[column.key]}</td>)}
+                {columns.map((column) => <td key={column.key} className="max-w-[220px] px-3 py-3 text-gray-700 dark:text-gray-200 break-words sm:px-4">{column.render ? column.render(row) : row[column.key]}</td>)}
               </tr>
             ))}
           </tbody>
@@ -178,11 +178,11 @@ export default function Admin() {
 
   return (
     <DashboardLayout>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t("admin")}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-5 sm:mb-6">{t("admin")}</h1>
 
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="-mx-3 mb-5 flex gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:mb-6 sm:px-0">
         {tabs.map((item) => (
-          <button key={item} onClick={() => setTab(item)} className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === item ? "bg-blue-600 text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"}`}>
+          <button key={item} onClick={() => setTab(item)} className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium ${tab === item ? "bg-blue-600 text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"}`}>
             {item}
           </button>
         ))}
@@ -190,7 +190,7 @@ export default function Admin() {
 
       {tab === "analytics" && analytics && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[
               ["Daily Active Users", analytics.activeUsers],
               ["Revenue Today", `$${Number(analytics.revenueToday ?? 0).toFixed(2)}`],
@@ -211,12 +211,12 @@ export default function Admin() {
               <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Top Users</h2>
               <div className="space-y-3">
                 {(analytics.topUsers ?? []).map((item: any) => (
-                  <div key={item.id} className="flex items-center justify-between">
-                    <div>
+                  <div key={item.id} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
                       <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
-                      <div className="text-sm text-gray-500">{item.telegramId}</div>
+                      <div className="text-sm text-gray-500 break-all">{item.telegramId}</div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                       <div className="font-semibold text-green-600">${Number(item.rewardTotal).toFixed(2)}</div>
                       <div className="text-xs text-gray-500">rev ${Number(item.revenueTotal).toFixed(2)}</div>
                     </div>
@@ -248,7 +248,7 @@ export default function Admin() {
 
       {tab === "users" && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -290,7 +290,7 @@ export default function Admin() {
                 key: "actions",
                 label: "Actions",
                 render: (row) => (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button onClick={() => patchWithdrawal(row.id, "approved")} className="px-2 py-1 rounded text-xs bg-green-100 text-green-700">Approve</button>
                     <button onClick={() => patchWithdrawal(row.id, "rejected")} className="px-2 py-1 rounded text-xs bg-red-100 text-red-700">Reject</button>
                   </div>
@@ -398,13 +398,13 @@ export default function Admin() {
             {vipLevels.map((level) => (
               <div key={level.id} className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm space-y-3">
                 <div className="font-semibold text-gray-900 dark:text-white">{level.name}</div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid gap-3 sm:grid-cols-3">
                   <input type="number" value={level.price} onChange={(e) => setVipLevels(vipLevels.map((item) => item.id === level.id ? { ...item, price: Number(e.target.value) } : item))} className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" />
                   <input type="number" step="0.01" value={level.multiplier} onChange={(e) => setVipLevels(vipLevels.map((item) => item.id === level.id ? { ...item, multiplier: Number(e.target.value) } : item))} className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" />
                   <input type="number" value={level.dailyLimit} onChange={(e) => setVipLevels(vipLevels.map((item) => item.id === level.id ? { ...item, dailyLimit: Number(e.target.value) } : item))} className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" />
                 </div>
                 <textarea value={(level.benefits || []).join("\n")} onChange={(e) => setVipLevels(vipLevels.map((item) => item.id === level.id ? { ...item, benefits: e.target.value.split("\n").filter(Boolean) } : item))} className="w-full min-h-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700" />
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <button onClick={() => patchVipLevel(level.id, level)} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">Save</button>
                   <button onClick={() => patchVipLevel(level.id, { isActive: !level.isActive })} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg text-sm">{level.isActive ? "Disable" : "Enable"}</button>
                 </div>
@@ -487,7 +487,7 @@ export default function Admin() {
                 ["tadsEnabled", "Enable TADS"],
                 ["withdrawalsEnabled", "Enable Withdrawals"],
               ].map(([key, label]) => (
-                <label key={key} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <label key={key} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                   <input type="checkbox" checked={Boolean(settings[key])} onChange={(e) => setSettings({ ...settings, [key]: e.target.checked })} />
                   {label}
                 </label>
@@ -496,11 +496,11 @@ export default function Admin() {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">BitLabs Postback URL</label>
-                <input value={settings.bitlabsPostbackUrl ?? ""} readOnly className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 outline-none" />
+                <input value={settings.bitlabsPostbackUrl ?? ""} readOnly className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 outline-none break-all" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">AdGem Postback URL</label>
-                <input value={settings.adgemPostbackUrl ?? ""} readOnly className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 outline-none" />
+                <input value={settings.adgemPostbackUrl ?? ""} readOnly className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200 outline-none break-all" />
               </div>
             </div>
           </div>

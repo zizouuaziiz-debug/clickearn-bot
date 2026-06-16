@@ -32,14 +32,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   function handleLogout() { logout(); navigate("/"); }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex" dir={isRTL ? "rtl" : "ltr"}>
-      <aside className={`fixed inset-y-0 ${isRTL ? "right-0 border-l" : "left-0 border-r"} z-40 w-64 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ${open ? "translate-x-0" : isRTL ? "translate-x-full" : "-translate-x-full"} md:translate-x-0 md:static md:block`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-x-hidden" dir={isRTL ? "rtl" : "ltr"}>
+      <aside className={`fixed inset-y-0 ${isRTL ? "right-0 border-l" : "left-0 border-r"} z-40 flex h-screen w-64 flex-col bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ${open ? "translate-x-0" : isRTL ? "translate-x-full" : "-translate-x-full"} md:translate-x-0 md:static md:block`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
           <Link to="/" className="text-xl font-bold text-blue-600">ClickEarn</Link>
           <button onClick={() => setOpen(false)} className="md:hidden text-gray-500"><X size={20} /></button>
         </div>
 
-        <nav className="p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-4 pb-6 space-y-1">
           {navItems.map(({ to, icon: Icon, label }) => (
             <Link key={to} to={to} onClick={() => setOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${location.pathname === to ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"}`}>
@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
-        <div className="absolute bottom-4 left-0 right-0 px-4">
+        <div className="mt-auto border-t border-gray-100 px-4 py-4 dark:border-gray-700">
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
             <LogOut size={18} /> {t("logout")}
           </button>
@@ -59,16 +59,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {open && <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setOpen(false)} />}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-3 sm:px-4 flex items-center justify-between gap-3">
           <button onClick={() => setOpen(true)} className="md:hidden text-gray-500 hover:text-gray-700"><Menu size={22} /></button>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:block text-sm text-gray-500 dark:text-gray-400">{user?.name}</span>
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <span className="hidden max-w-[140px] truncate sm:block text-sm text-gray-500 dark:text-gray-400">{user?.name}</span>
             <LanguageToggle />
             <ThemeToggle />
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-3 sm:p-4 md:p-6">{children}</main>
       </div>
     </div>
   );

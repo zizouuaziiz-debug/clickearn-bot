@@ -12,9 +12,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900" dir={isRTL ? "rtl" : "ltr"}>
       {/* Header */}
-      <header className="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+      <header className="flex flex-col gap-3 border-b border-gray-100 px-4 py-4 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <span className="text-xl font-bold text-blue-600">ClickEarn</span>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end sm:gap-3">
           <LanguageToggle />
           <ThemeToggle />
           <Link to="/admin-login" className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
@@ -29,10 +29,10 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="py-20 px-6 text-center bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <section className="bg-gradient-to-b from-blue-50 to-white px-4 py-16 text-center dark:from-gray-800 dark:to-gray-900 sm:px-6 sm:py-20">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">{t("heroTitle")}</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-xl mx-auto">{t("heroSub")}</p>
+          <h1 className="mb-4 text-3xl font-bold leading-tight text-gray-900 dark:text-white sm:text-4xl md:text-5xl">{t("heroTitle")}</h1>
+          <p className="mb-8 max-w-xl mx-auto text-base text-gray-600 dark:text-gray-300 sm:text-lg">{t("heroSub")}</p>
           {!isTelegramMiniApp && !user && (
             <div className="max-w-xl mx-auto mb-8 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/30 p-5 text-left">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t("telegramOnlyTitle")}</h2>
@@ -40,17 +40,17 @@ export default function Home() {
               {authError && <p className="text-sm text-red-500 mt-3">{authError}</p>}
             </div>
           )}
-          <div className="flex justify-center gap-4 flex-wrap">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
             {user ? (
-              <Link to="/dashboard" className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg">{t("dashboard")}</Link>
+              <Link to="/dashboard" className="w-full rounded-xl bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 sm:w-auto">{t("dashboard")}</Link>
             ) : isTelegramMiniApp ? (
-              <Link to="/dashboard" className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg">{t("openDashboard")}</Link>
+              <Link to="/dashboard" className="w-full rounded-xl bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 sm:w-auto">{t("openDashboard")}</Link>
             ) : (
               <>
-                <a href="https://telegram.org/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg">
+                <a href="https://telegram.org/" target="_blank" rel="noreferrer" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-3 font-semibold text-white shadow-lg transition-colors hover:bg-blue-700 sm:w-auto">
                   <Send size={18} /> {t("openInTelegram")}
                 </a>
-                <Link to="/admin-login" className="inline-flex items-center gap-2 px-8 py-3 border border-blue-200 text-blue-700 rounded-xl font-semibold hover:bg-blue-50 transition-colors shadow-sm dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/20">
+                <Link to="/admin-login" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 px-8 py-3 font-semibold text-blue-700 shadow-sm transition-colors hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/20 sm:w-auto">
                   {t("openAdminPanel")}
                 </Link>
               </>
