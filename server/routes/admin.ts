@@ -399,6 +399,15 @@ router.get("/settings", async (req, res) => {
   }
 });
 
+const numericSettingSchema = z.union([z.number(), z.string()]).transform((value, ctx) => {
+  const normalized = typeof value === "number" ? value : Number(value);
+  if (Number.isNaN(normalized)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Expected numeric value" });
+    return z.NEVER;
+  }
+  return normalized;
+});
+
 const UpdateSettingsBody = z.object({
   telegramBotToken: z.string().optional(),
   telegramBotUsername: z.string().optional(),
@@ -428,12 +437,12 @@ const UpdateSettingsBody = z.object({
   tadsRewardedUnit: z.string().optional(),
   tadsInterstitialUnit: z.string().optional(),
   tadsBannerUnit: z.string().optional(),
-  rewardedAdReward: z.number().optional(),
-  interstitialAdReward: z.number().optional(),
-  bannerAdReward: z.number().optional(),
-  referralSignupReward: z.number().optional(),
-  referralCommissionRate: z.number().optional(),
-  withdrawalMinimum: z.number().optional(),
+  rewardedAdReward: numericSettingSchema.optional(),
+  interstitialAdReward: numericSettingSchema.optional(),
+  bannerAdReward: numericSettingSchema.optional(),
+  referralSignupReward: numericSettingSchema.optional(),
+  referralCommissionRate: numericSettingSchema.optional(),
+  withdrawalMinimum: numericSettingSchema.optional(),
   withdrawalsEnabled: z.boolean().optional(),
 });
 
