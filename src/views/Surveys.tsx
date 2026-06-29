@@ -6,115 +6,156 @@ import { openExternalLink } from "@/lib/telegram";
 import { ClipboardList, ExternalLink, ShieldCheck, Wallet } from "lucide-react";
 
 const SURVEY_TABS = [
-  { id: "cpx", label: "CPX Research", endpoint: "/api/surveys", color: "blue" },
-  { id: "pollmatic", label: "Pollmatic", endpoint: "/api/pollmatic/wall", color: "purple" },
-  { id: "rewardsow", label: "Rewards Offerwall", endpoint: "/api/rewards-offerwall/wall", color: "green" },
-  { id: "offerwallme", label: "Offerwall.me", endpoint: "/api/offerwall-me/wall", color: "orange" },
-  { id: "earnwall", label: "EarnWall", endpoint: "/api/earnwall/wall", color: "pink" },
+  { id: "cpx",         label: "CPX Research",     endpoint: "/api/surveys",                  color: "blue" },
+  { id: "pollmatic",   label: "Pollmatic",         endpoint: "/api/pollmatic/config",         color: "purple" },
+  { id: "rewardsow",   label: "Rewards Offerwall", endpoint: "/api/rewards-offerwall/config", color: "green" },
+  { id: "offerwallme", label: "Offerwall.me",      endpoint: "/api/offerwall-me/config",      color: "orange" },
+  { id: "earnwall",    label: "EarnWall",          endpoint: "/api/earnwall/config",          color: "pink" },
 ];
 
-const COLOR_MAP: Record<string, string> = {
-  blue: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+const COLOR_ICON: Record<string, string> = {
+  blue:   "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
   purple: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
-  green: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
+  green:  "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
   orange: "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
-  pink: "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",
+  pink:   "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",
 };
+
+function UnavailableState({ label }: { label: string }) {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm text-center text-gray-400">
+      <ClipboardList size={48} className="mx-auto mb-3 opacity-50" />
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        {label} is unavailable
+      </h2>
+      <p className="text-sm">
+        Enable {label} and configure the required credentials (as environment variables on your server) to activate this survey wall.
+      </p>
+    </div>
+  );
+}
 
 function SurveyTabContent({ tab, token }: { tab: typeof SURVEY_TABS[number]; token: string }) {
   const { t } = useLang();
   const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     setLoading(true);
     setData(null);
+    setUnavailable(false);
+
     fetch(tab.endpoint, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(async (r) => {
+        if (!r.ok) {
+          // 503 = not enabled, 500 = not configured
+          setUnavailable(true);
+          setLoading(false);
+          return;
+        }
+        const json = await r.json();
+        // CPX Research returns { configured: false } when disabled
+        if (json.configured === false || json.enabled === false || json.error) {
+          setUnavailable(true);
+        } else {
+          setData(json);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setUnavailable(true);
+        setLoading(false);
+      });
   }, [token, tab.endpoint]);
 
-  if (loading) return <p className="text-gray-500">{t("loading")}</p>;
+  if (loading) return <p className="text-gray-500 dark:text-gray-400">{t("loading")}</p>;
+  if (unavailable || !data) return <UnavailableState label={tab.label} />;
 
-  if (!data?.configured) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm text-center text-gray-400">
-        <ClipboardList size={48} className="mx-auto mb-3 opacity-50" />
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          {tab.label} surveys are unavailable
-        </h2>
-        <p>Configure {tab.label} credentials in the admin panel to activate this survey wall.</p>
-      </div>
-    );
-  }
+  const isCpx = tab.id === "cpx";
+
+  // EarnWall exposes surveysUrl for survey-specific iframe; others use offerwallUrl
+  const wallUrl: string =
+    data.surveysUrl ??
+    data.offerwallUrl ??
+    data.surveysApiUrl ??
+    "";
 
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
-          <div className={`w-10 h-10 rounded-lg ${COLOR_MAP[tab.color]} flex items-center justify-center mb-3`}>
-            <ClipboardList size={18} />
+      {/* Stats — only CPX Research has server-side stats */}
+      {isCpx && (
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
+            <div className={`w-10 h-10 rounded-lg ${COLOR_ICON[tab.color]} flex items-center justify-center mb-3`}>
+              <ClipboardList size={18} />
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              {data.stats?.completedCount ?? 0}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Completed surveys</div>
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {data.stats?.completedCount ?? 0}
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
+            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-3">
+              <Wallet size={18} />
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              ${Number(data.stats?.totalReward ?? 0).toFixed(2)}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total wallet credits</div>
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Completed surveys</div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
+            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3">
+              <ShieldCheck size={18} />
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+              ${Number(data.stats?.totalRevenue ?? 0).toFixed(2)}
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Platform revenue</div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-3">
-            <Wallet size={18} />
-          </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            ${Number(data.stats?.totalReward ?? 0).toFixed(2)}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total wallet credits</div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-3">
-            <ShieldCheck size={18} />
-          </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            ${Number(data.stats?.totalRevenue ?? 0).toFixed(2)}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Platform revenue</div>
-        </div>
-      </div>
+      )}
 
+      {/* Survey iframe */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-5 shadow-sm">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{tab.label}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 break-all">
-              Loaded with Telegram user ID `{data.telegramUserId}` for automatic reward attribution.
-            </p>
+            {isCpx && data.telegramUserId && (
+              <p className="text-sm text-gray-500 dark:text-gray-400 break-all">
+                Loaded with Telegram user ID `{data.telegramUserId}` for automatic reward attribution.
+              </p>
+            )}
           </div>
-          {data.offerwallUrl && (
+          {wallUrl && (
             <button
               type="button"
-              onClick={() => openExternalLink(data.offerwallUrl)}
+              onClick={() => openExternalLink(wallUrl)}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 sm:w-auto"
             >
               {t("openOfferwall")} <ExternalLink size={14} />
             </button>
           )}
         </div>
-        {data.offerwallUrl && (
+        {wallUrl ? (
           <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
             <iframe
-              src={data.offerwallUrl}
+              src={wallUrl}
               title={tab.label}
               className="h-[70vh] min-h-[520px] w-full bg-white sm:h-[900px]"
             />
           </div>
+        ) : (
+          <p className="text-sm text-gray-400">No survey wall URL available from this provider.</p>
         )}
       </div>
 
-      {(data.recentCompletions?.length ?? 0) > 0 && (
+      {/* Recent completions — CPX Research only */}
+      {isCpx && (data.recentCompletions?.length ?? 0) > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent {tab.label} Completions
+            Recent Completions
           </h2>
           <div className="grid gap-4 xl:grid-cols-2">
             {data.recentCompletions.map((item: any) => (
@@ -149,7 +190,7 @@ export default function Surveys() {
   const { t } = useLang();
   const [activeTab, setActiveTab] = useState("cpx");
 
-  const currentTab = SURVEY_TABS.find(t => t.id === activeTab) ?? SURVEY_TABS[0];
+  const currentTab = SURVEY_TABS.find((tb) => tb.id === activeTab) ?? SURVEY_TABS[0];
 
   return (
     <DashboardLayout>
