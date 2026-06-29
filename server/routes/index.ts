@@ -1,0 +1,47 @@
+import { Router } from "express";
+import authRouter from "./auth";
+import walletRouter from "./wallet";
+import tasksRouter from "./tasks";
+import surveysRouter from "./surveys";
+import vipRouter from "./vip";
+import offersRouter from "./offers";
+import referralRouter from "./referral";
+import adminRouter from "./admin";
+import { cpxResearchRouter } from "./cpx-research";
+import { adsgramRouter } from "./adsgram";
+import lootablyRouter from "./lootably";
+import toroxRouter from "./torox";
+import monetagRouter from "./monetag";
+import clickaduRouter from "./clickadu";
+import monlixRouter from "./monlix";
+import gemiadsRouter from "./gemiads";
+import earnwallRouter from "./earnwall";
+import pollmaticRouter from "./pollmatic";
+import rewardsOfferwallRouter from "./rewards-offerwall";
+import offerwallMeRouter from "./offerwall-me";
+
+const router = Router();
+
+router.get("/healthz", (_req, res) => res.json({ status: "ok" }));
+router.use("/auth", authRouter);
+router.use("/wallet", walletRouter);
+router.use("/tasks", tasksRouter);
+router.use("/surveys", surveysRouter);
+router.use("/vip", vipRouter);
+router.use("/offers", offersRouter);
+router.use("/referral", referralRouter);
+router.use("/admin", adminRouter);
+router.use("/cpx-research", cpxResearchRouter);
+router.use("/adsgram", adsgramRouter);
+router.use("/lootably", lootablyRouter);
+router.use("/torox", toroxRouter);
+router.use("/monetag", monetagRouter);
+router.use("/clickadu", clickaduRouter);
+router.use("/monlix", monlixRouter);
+router.use("/gemiads", gemiadsRouter);
+router.use("/earnwall", earnwallRouter);
+router.use("/pollmatic", pollmaticRouter);
+router.use("/rewards-offerwall", rewardsOfferwallRouter);
+router.use("/offerwall-me", offerwallMeRouter);
+
+export default router;
